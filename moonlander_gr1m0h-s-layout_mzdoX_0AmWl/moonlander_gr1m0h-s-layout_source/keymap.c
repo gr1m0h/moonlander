@@ -61,8 +61,8 @@ enum custom_keycodes {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [0] = LAYOUT_moonlander(
     KC_ESCAPE,      KC_1,           KC_2,           KC_3,           KC_4,           KC_5,           KC_6,                                           KC_7,           KC_8,           KC_9,           KC_0,           KC_MINUS,       KC_EQUAL,       KC_BSPACE,      
-    KC_TAB,         KC_Q,           KC_W,           KC_E,           KC_R,           KC_T,           KC_Y,                                           KC_MAC_COPY,    KC_U,           KC_I,           KC_O,           KC_P,           KC_LBRACKET,    KC_RBRACKET,    
-    KC_CAPSLOCK,    KC_A,           KC_S,           KC_D,           KC_F,           KC_G,           KC_H,                                                                           KC_MAC_PASTE,   KC_J,           KC_K,           KC_L,           KC_SCOLON,      KC_QUOTE,       KC_ENTER,       
+    KC_TAB,         KC_Q,           KC_W,           KC_E,           KC_R,           KC_T,           KC_Y,                                           KC_MAC_PASTE,   KC_U,           KC_I,           KC_O,           KC_P,           KC_LBRACKET,    KC_RBRACKET,    
+    KC_CAPSLOCK,    KC_A,           KC_S,           KC_D,           KC_F,           KC_G,           KC_H,                                                                           KC_MAC_COPY,    KC_J,           KC_K,           KC_L,           KC_SCOLON,      KC_QUOTE,       KC_ENTER,       
     KC_LSHIFT,      KC_Z,           KC_X,           KC_C,           KC_V,           KC_B,                                           KC_N,           KC_M,           KC_COMMA,       KC_DOT,         KC_UP,          KC_BSLASH,      
     KC_HYPR,        KC_LCTRL,       KC_LALT,        KC_LGUI,        MO(3),          KC_LANG2,                                                                                                       KC_LANG1,       KC_MEH,         KC_SLASH,       KC_LEFT,        KC_DOWN,        KC_RIGHT,       
     KC_SPACE,       LGUI(LSFT(KC_4)),LGUI(LCTL(KC_SPACE)),                MAC_DND,        MO(2),          MO(1)
@@ -130,6 +130,9 @@ void set_layer_color(int layer) {
 }
 
 void rgb_matrix_indicators_user(void) {
+  if (rawhid_state.rgb_control) {
+      return;
+  }
   if (keyboard_config.disable_layer_led) { return; }
   switch (biton32(layer_state)) {
     case 0:
@@ -163,11 +166,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       HSS(0x9B);
 
     case RGB_SLD:
-      if (record->event.pressed) {
-        rgblight_mode(1);
-      }
-      return false;
+        if (rawhid_state.rgb_control) {
+            return false;
+        }
+        if (record->event.pressed) {
+            rgblight_mode(1);
+        }
+        return false;
   }
   return true;
 }
+
+
 
